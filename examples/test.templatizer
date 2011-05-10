@@ -1,0 +1,29 @@
+{ 
+	"version":"10",
+	"author":"John Doe",
+	"description":"Basic skeleton for unit tests.",
+	"name": "test",
+	"package":
+	[	
+		["%NAME-LOWCASE%.hpp","test/test.hpp"]
+	],
+	"variables":
+	{
+		"name": 
+		{
+			"%NAME%":"v",
+			"%NAME-LOWCASE%":"v.lower()",
+			"%NAME-UPCASE%":"v.upper()"
+		},
+		"namespace":
+		{
+			"%NAMESPACE%":"v",
+			"%NAMESPACE-OPEN%":"v + '::'",
+			"%NAMESPACE-INC%":"v.replace('::','/') + '/'"
+		}
+	},
+	"constants":
+	{
+		"%YEAR%":"datetime.now().year"
+	}
+}
