@@ -27,6 +27,7 @@ class Templatizer:
 			self.logger.write("%s\n" % message)
 		
 	def scan(self, template_dir):
+		template_dir = os.path.expanduser(template_dir)
 		self.log('Searching %s for available templates ...' % template_dir)
 		tpls = glob.glob(os.path.join(template_dir,'*.templatizer'))
 		for tpl in tpls:

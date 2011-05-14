@@ -31,7 +31,7 @@ Templatizer can be configured via `$HOME/.templatizer` which is a simple JSON
 structure with the following format:
 
 	{
-		"paths":["/home/boo/cool-templates","/home/boo/secret-project/templates"],
+		"paths":["~/cool-templates","~/secret-project/templates"],
 		"constants":
 		{
 			"%FULLNAME%":"'John Doe'",
