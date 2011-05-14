@@ -168,10 +168,14 @@ class Templatizer:
 							
 		return 0 # Success			
 		
-def main(argv):		
-	print('Templatizer v%s' % __version__)
-	if len(argv) < 3:
-		print('usage: templatizer template [--key1=value1, --key2=value2]')
+def main(argv):
+	if len(argv) < 2:
+		print('Templatizer v%s' % __version__)
+		print('usage: %s template [--key1=value1, --key2=value2]' % os.path.basename(argv[0]))
+		return 1
+
+	if argv[1] == '-v' or argv[1] == '--version':
+		print('%s' % __version__)
 		return 1
 		
 	return Templatizer(argv[2:]).execute(argv[1])
