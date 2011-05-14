@@ -1,8 +1,10 @@
 #!/usr/bin/env python
-"""
+'''
 	Copyright (c) 2011, Mihail Szabolcs
 	For more information see LICENSE.
-"""
+'''
+__version__ = '0.0.1'
+__doc__ = 'Templatizer is a general purpose data-driven (JSON) light-weight generator written in Python.'
 import sys
 import os
 import glob
@@ -69,9 +71,9 @@ class Templatizer:
 		for pkg in tpl['package']:
 			if len(pkg) < 2: continue
 						
-			if pkg[1] == "dir":
+			if pkg[1] == 'dir':
 				pkg[0] = self.process_path(tpl, pkg[0])
-			elif pkg[1] == "shell":
+			elif pkg[1] == 'shell':
 				pkg[0] = self.process(tpl, pkg[0])
 			else:
 				pkg[0] = self.process_path(tpl, pkg[0])
@@ -97,13 +99,13 @@ class Templatizer:
 		if argv and isinstance(argv, list):
 			# accepted argument format: --key=value
 			for arg in argv:
-				if arg.startswith("--") and arg.find("=") != -1:
-					k,v = arg.split("=")
+				if arg.startswith('--') and arg.find('=') != -1:
+					k,v = arg.split('=')
 					k = k[2:]
 					
-					if k == "path": 
+					if k == 'path': 
 						self.scan(v)
-					elif k == "verbose":
+					elif k == 'verbose':
 						self.verbose = int(v)
 					else: 
 						self.arguments[k] = v
@@ -167,12 +169,13 @@ class Templatizer:
 		return 0 # Success			
 		
 def main(argv):		
+	print('Templatizer v%s' % __version__)
 	if len(argv) < 3:
 		print('usage: templatizer template [--key1=value1, --key2=value2]')
 		return 1
 		
 	return Templatizer(argv[2:]).execute(argv[1])
 	
-if __name__ == "__main__":
+if __name__ == '__main__':
 	exit(main(sys.argv))
 

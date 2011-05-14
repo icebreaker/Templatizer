@@ -125,6 +125,7 @@ Contribute
 * Fork the project.
 * Make your feature addition or bug fix.
 * Send me a pull request. Bonus points for topic branches.
+* Do **not** bump the version number.
 
 License
 -------
