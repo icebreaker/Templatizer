@@ -147,8 +147,11 @@ class Templatizer:
 			c, t = pkg
 			
 			if t == 'dir':
-				if not os.path.exists(c): os.makedirs(c) # create directories
+				if not os.path.exists(c): 
+					os.makedirs(c) # create directories
+					self.log('Directory %s created ...' % c)
 			elif t == 'shell':
+				self.log('%s' % c)
 				os.system(c) # execute shell commands
 			else:
 				if not os.path.exists(t): 
@@ -157,6 +160,7 @@ class Templatizer:
 					self.log('File %s exists, skipping ...' % c)
 				else:
 					with open(c,'w') as f: f.write(self.process(tpl, open(t).read()))
+					self.log('File %s written ...' % c)
 					
 							
 		return 0 # Success			
