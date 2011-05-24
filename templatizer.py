@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-'''
-	Copyright (c) 2011, Mihail Szabolcs
-	For more information see LICENSE.
-'''
-__version__ = '0.0.1'
-__doc__ = 'Templatizer is a general purpose data-driven (JSON) light-weight generator written in Python.'
+
+__author__  = 'Mihail Szabolcs'
+__version__ = (0, 1, 0)
+__license__ = 'GPL'
+
 import sys
 import os
 import glob
@@ -170,12 +169,12 @@ class Templatizer:
 		
 def main(argv):
 	if len(argv) < 2:
-		print('Templatizer v%s' % __version__)
+		print('Templatizer v%d.%d.%d' % __version__)
 		print('usage: %s template [--key1=value1, --key2=value2]' % os.path.basename(argv[0]))
 		return 1
 
 	if argv[1] == '-v' or argv[1] == '--version':
-		print('%s' % __version__)
+		print('%d.%d.%d' % __version__)
 		return 1
 		
 	return Templatizer(argv[2:]).execute(argv[1])
