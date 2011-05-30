@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__  = 'Mihail Szabolcs'
-__version__ = (0, 1, 0)
+__version__ = (0, 2, 0)
 __license__ = 'GPL'
 
 import sys
@@ -10,43 +10,54 @@ import glob
 import json
 import platform
 import math
+import logging
 from datetime import datetime
 
+class Template:
+	"""
+		Template Class
+	"""
+	def __init__(self):
+		""" Constructor """
+		pass
+
+class Generator:
+	"""
+		Generator Class
+	"""
+	def __init__(self):
+		""" Constructor """
+		pass
+
 class Templatizer:
-	def __init__(self, argv=None, logger=sys.stdout, verbose=1):
-		self.logger = logger
-		self.verbose = verbose
+	def __init__(self, argv=None):
 		self.templates = {}
 		self.arguments = {}
 		self.constants = {}
 		
 		self.parse_arguments(argv)
-		self.parse_config()
+		self.parse_config('~/.templatizer')
 	
-	def log(self, message, verbose = 0):
-		if verbose < self.verbose:
-			self.logger.write("%s\n" % message)
-		
 	def scan(self, template_dir):
 		template_dir = os.path.expanduser(template_dir)
-		self.log('Searching %s for available templates ...' % template_dir)
+		logging.debug('Searching %s for available templates ...' % template_dir)
 		tpls = glob.glob(os.path.join(template_dir,'*.templatizer'))
 		for tpl in tpls:
-			self.log('\t-> Parsing %s ...' % tpl,1)
+			logging.debug('\t-> Parsing %s ...' % tpl)
 			if self.parse_template(template_dir, tpl):
-				self.log('\t-> SUCCESS',1)
+				logging.debug('\t-> SUCCESS')
 			else:
-				self.log('\t-> FAIL',1)
+				logging.debug('\t-> FAIL')
 				
 	def parse_template(self, template_dir, template):
 		tpl = json.loads(open(template).read())
 		
 		if not self.validate_template(tpl):
-			self.log('\t-> %s is not a valid template file' % template, 1)
+			#self.log('\t-> %s is not a valid template file' % template, 1)
 			return False
 		
 		if tpl['name'] in self.templates:
-			self.log('WARNING: a template with the name %s already exists' % tpl['name'],1)
+			#self.log('WARNING: a template with the name %s already exists' % tpl['name'],1)
 			return False
 		
 		tmp_vrs = {}
@@ -95,22 +106,16 @@ class Templatizer:
 		return True
 	
 	def parse_arguments(self, argv):
-		if argv and isinstance(argv, list):
+		""" Parses arguments into a key, value dictionary """
+		for arg in argv:
 			# accepted argument format: --key=value
-			for arg in argv:
-				if arg.startswith('--') and arg.find('=') != -1:
-					k,v = arg.split('=')
-					k = k[2:]
-					
-					if k == 'path': 
-						self.scan(v)
-					elif k == 'verbose':
-						self.verbose = int(v)
-					else: 
-						self.arguments[k] = v
+			if arg.startswith('--') and arg.find('=') != -1:
+				k, v = arg.split('=')
+				self.arguments[k[2:]] = v
 						
-	def parse_config(self):
-		config_file = os.path.expanduser('~/.templatizer')
+	def parse_config(self, config):
+		""" Parses the configuration, in this case loads all available templates """
+		config_file = os.path.expanduser(config)
 		if not os.path.exists(config_file) or not os.path.isfile(config_file): return
 				
 		config = json.loads(open(config_file).read())
@@ -118,9 +123,6 @@ class Templatizer:
 		if 'paths' in config:
 			for path in config['paths']: 
 				self.scan(path)
-		if 'constants' in config:
-			for k, v in config['constants']: 
-				self.constants[k] = str(eval('lambda: %s' % v)())
 						
 	def process(self, template, content):
 		for k, v in template['variables'].items():
@@ -136,8 +138,9 @@ class Templatizer:
 		return os.path.abspath(self.process(template, path))
 	
 	def execute(self, template):
+		"""
 		if not template in self.templates:
-			self.log('Template %s does not exist ...' % template)
+			#self.log('Template %s does not exist ...' % template)
 			return 1
 		
 		tpl = self.templates[template]
@@ -151,34 +154,44 @@ class Templatizer:
 			if t == 'dir':
 				if not os.path.exists(c): 
 					os.makedirs(c) # create directories
-					self.log('Directory %s created ...' % c)
+					#self.log('Directory %s created ...' % c)
 			elif t == 'shell':
-				self.log('%s' % c)
+				#self.log('%s' % c)
 				os.system(c) # execute shell commands
 			else:
 				if not os.path.exists(t): 
-					self.log('Template %s doesn\'t exists, skipping ...' % t)					
+					#self.log('Template %s doesn\'t exists, skipping ...' % t)					
+					pass
 				elif os.path.exists(c): 
-					self.log('File %s exists, skipping ...' % c)
+					#self.log('File %s exists, skipping ...' % c)
+					pass
 				else:
 					with open(c,'w') as f: f.write(self.process(tpl, open(t).read()))
-					self.log('File %s written ...' % c)
-					
+					#self.log('File %s written ...' % c)
+		"""			
 							
 		return 0 # Success			
 		
 def main(argv):
+	""" Main """
 	if len(argv) < 2:
 		print('Templatizer v%d.%d.%d' % __version__)
-		print('usage: %s template [--key1=value1, --key2=value2]' % os.path.basename(argv[0]))
+		print('usage: %s [options] template [--key1=value1, --key2=value2]' % os.path.splitext(os.path.basename(argv[0]))[0])
+		print('')
+		print('Options:')
+		print('\t-v, --version\tshows the version number')
+		print('\t-d, --debug\tenables debug output')
 		return 1
 
-	if argv[1] == '-v' or argv[1] == '--version':
-		print('%d.%d.%d' % __version__)
+	if '-v' in argv or '--version' in argv:
+		print('%d.%d.%d' % __version__) # print version
 		return 1
-		
+
+	if argv[1] == '-d' or argv[1] == '--debug':
+		argv.pop(1) # remove this item
+		logging.basicConfig(level=logging.DEBUG)
+	
 	return Templatizer(argv[2:]).execute(argv[1])
 	
 if __name__ == '__main__':
 	exit(main(sys.argv))
-
