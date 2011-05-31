@@ -181,12 +181,12 @@ class Generator:
 			# do not overwrite files
 			if os.path.exists(action_name): 
 				logging.debug('File %s exists, skipping ...' % action_name)
-				pass
 			else:
 				# write template file in the currently active directory
 				# see def execute(...) for more information regarding this
-				with open(action_name,'w') as f: f.write(action_data)
-				logging.debug('File %s written ...' % action_name)
+				with open(action_name,'w') as f: 
+					f.write(action_data)
+					logging.debug('File %s written ...' % action_name)
 
 	def execute(self, name, path):
 		""" Executes the generator """
