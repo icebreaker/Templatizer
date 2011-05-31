@@ -39,6 +39,10 @@ class InvalidActionHandler(TemplatizerException):
 	""" Templatizer Invalid Action Handler Exception """
 	pass
 
+class ArgumentRequired(TemplatizerException):
+	""" Templatizer Argument Required Exception """
+	pass
+
 class Template:
 	"""
 		Template Class
@@ -90,8 +94,7 @@ class Template:
 				for kk, vv in v.items():
 					self.variables[kk] = str(eval('lambda v: %s' % vv)(vvv))
 			else:
-				for kk, vv in v.items():
-					self.variables[kk] = '' # fallback to empty string
+				raise ArgumentRequired('--%s argument required' % k)
 
 		return True
 
@@ -239,16 +242,11 @@ class Templatizer:
 			for path in f:
 				self.parse_templates(path.strip())
 						
-	def execute(self, name):
+	def execute(self, name, path):
 		""" Executes the internal generator """
-		try:
-			logging.debug("Working directory `%s`" % os.getcwd())
-			return self.generator.execute(name, os.getcwd())
-		except TemplatizerException as message:
-			logging.debug(message)
-
-		return -1
-		
+		logging.debug("Working directory `%s`" % path)
+		return self.generator.execute(name, path)
+			
 def main(argv):
 	""" Main """
 	if len(argv) < 2:
@@ -268,7 +266,12 @@ def main(argv):
 		argv.pop(1) # remove this item
 		logging.basicConfig(level=logging.DEBUG)
 	
-	return Templatizer(argv[2:]).execute(argv[1])
+	try:
+		return Templatizer(argv[2:]).execute(argv[1], os.getcwd())
+	except TemplatizerException as message:
+		print(message)
 	
+	return -1
+
 if __name__ == '__main__':
 	exit(main(sys.argv))
