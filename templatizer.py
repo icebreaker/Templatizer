@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-__author__  = 'Mihail Szabolcs'
-__version__ = (0, 2, 0)
-__license__ = 'GPL'
+__author__		= 'Mihail Szabolcs'
+__description__ = 'General purpose data-driven generator.'
+__version__		= (0, 2, 0)
+__license__		= 'GPL'
 
 import sys
 import os
@@ -13,12 +14,6 @@ import platform
 import math
 import logging
 from datetime import datetime
-
-EXIT_SUCCESS = 0
-EXIT_ERROR = -1
-
-ACTION_SHELL= 1
-ACTION_FILE = 2
 
 def qglob(path, pattern):
 	""" Glob convenience helper """
@@ -86,7 +81,7 @@ class Template:
 		if not self.preprocess():
 			return False
 
-		if not self.parse_actions(template['package']):
+		if not self.parse_actions(template['recipe']):
 			return False
 
 		return True
@@ -109,8 +104,10 @@ class Template:
 		for k, v in constants.items():
 			self.constants[k] = str(eval('lambda: %s' % v)())
 
-		# built-in constants
-		self.constants['%TPLDIR%'] = path
+		# list of (internal) built-in constants
+		self.constants['%YEAR'] = datetime.now().year 
+		self.constants['%DATE%'] = datetime.now().strftime("%d/%m/%y")
+		self.constants['%TPLDIR%'] = self.path # absolute path to the template directory
 
 		return True
 
@@ -128,7 +125,7 @@ class Template:
 
 	def validate(self, parsed):
 		""" Validates a parsed JSON template descriptor """
-		for p in ['name','package','variables','constants']:
+		for p in ['name','recipe','variables','constants']:
 			if not p in parsed:
 				return False
 		
@@ -155,12 +152,12 @@ class Template:
 			action_name = action[0]
 			action_data = None
 			
-			if action_type == ACTION_FILE:
+			if action_type == 2:
 				action_data = self.process(open(action[1]).read())
 
 			action_handler(action_type, action_name, action_data)
 
-		return EXIT_SUCCESS
+		return 0
 
 class Generator:
 	"""
@@ -181,20 +178,19 @@ class Generator:
 
 	def action_handler(self, action_type, action_name, action_data=None):
 		""" Default action handler which creates files and executes shell commands """
-		print(action_name)
-		print(action_data)
-		"""
-		os.system(c) # execute shell commands
-		if not os.path.exists(t): 
-			#self.log('Template %s doesn\'t exists, skipping ...' % t)					
-			pass
-		elif os.path.exists(c): 
-			#self.log('File %s exists, skipping ...' % c)
-			pass
-		else:
-			with open(c,'w') as f: f.write(self.process(tpl, open(t).read()))
-			#self.log('File %s written ...' % c)
-		"""
+		if action_type == 1:
+			# execute shell command
+			os.system(action_name)
+		elif action_type == 2:
+			# do not overwrite files
+			if os.path.exists(action_name): 
+				logging.debug('File %s exists, skipping ...' % action_name)
+				pass
+			else:
+				# write template file in the currently active directory
+				# see def execute(...) for more information regarding this
+				with open(action_name,'w') as f: f.write(action_data)
+				logging.debug('File %s written ...' % action_name)
 
 	def execute(self, name, path):
 		""" Executes the generator """
@@ -226,9 +222,9 @@ class Templatizer:
 			tpl = Template(template_dir)
 			if tpl.parse(template, self.arguments):
 				self.generator.add_template(tpl)
-				logging.debug('\t-> SUCCESS')
+				logging.debug('-> SUCCESS')
 			else:
-				logging.debug('\t-> FAIL')
+				logging.debug('-> FAIL')
 
 	def parse_arguments(self, argv):
 		""" Parses arguments into a key, value dictionary """
@@ -250,11 +246,12 @@ class Templatizer:
 	def execute(self, name):
 		""" Executes the internal generator """
 		try:
+			logging.debug("Working directory `%s`" % os.getcwd())
 			return self.generator.execute(name, os.getcwd())
 		except TemplatizerException as message:
 			logging.debug(message)
 
-		return EXIT_ERROR
+		return -1
 		
 def main(argv):
 	""" Main """
@@ -265,11 +262,11 @@ def main(argv):
 		print('Options:')
 		print('\t-v, --version\tshows the version number')
 		print('\t-d, --debug\tenables debug output')
-		return EXIT_ERROR
+		return -1
 
 	if '-v' in argv or '--version' in argv:
 		print('%d.%d.%d' % __version__) # print version
-		return EXIT_SUCCESS
+		return 0
 
 	if argv[1] == '-d' or argv[1] == '--debug':
 		argv.pop(1) # remove this item
