@@ -58,11 +58,7 @@ class Template:
 		""" Getter for name attribute """
 		return self.__name
 
-	def __getActions(self):
-		""" Getter for actions attribute """
-
 	name = property(__getName, None, None, 'This template\'s name')
-	actions = property(__getActions, None, None, 'This template\'s actions')
 
 	def parse(self, filename, arguments={}):
 		template = json.loads(open(filename).read())
