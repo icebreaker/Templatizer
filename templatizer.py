@@ -51,7 +51,7 @@ class Template:
 		""" Constructor """
 		self.path = path
 		self.constants = {}
-		self.variables = {}
+		self.arguments = {}
 		self.actions = []
 
 		self.__regexp = None
@@ -72,7 +72,7 @@ class Template:
 	
 		self.__name = template['name']
 
-		if not self.parse_variables(template['variables'], arguments):
+		if not self.parse_arguments(template['arguments'], arguments):
 			return False
 
 		if not self.parse_constants(template['constants']):
@@ -81,18 +81,18 @@ class Template:
 		if not self.preprocess():
 			return False
 
-		if not self.parse_actions(template['recipe']):
+		if not self.parse_actions(template['actions']):
 			return False
 
 		return True
 	
-	def parse_variables(self, variables, arguments):
-		""" Parses and evaluates variables based on the arguments """
-		for k, v in variables.items():
-			if k in arguments:
-				vvv = arguments[k]
+	def parse_arguments(self, arguments, cmd_args):
+		""" Parses and evaluates arguments based on the command line arguments """
+		for k, v in arguments.items():
+			if k in cmd_args:
+				vvv = cmd_args[k]
 				for kk, vv in v.items():
-					self.variables[kk] = str(eval('lambda v: %s' % vv)(vvv))
+					self.arguments[kk] = str(eval('lambda v: %s' % vv)(vvv))
 			else:
 				raise ArgumentRequired('--%s argument required' % k)
 
@@ -104,7 +104,7 @@ class Template:
 			self.constants[k] = str(eval('lambda: %s' % v)())
 
 		# list of (internal) built-in constants
-		self.constants['%YEAR'] = datetime.now().year 
+		self.constants['%YEAR%'] = str(datetime.now().year)
 		self.constants['%DATE%'] = datetime.now().strftime("%d/%m/%y")
 		self.constants['%TPLDIR%'] = self.path # absolute path to the template directory
 
@@ -124,7 +124,7 @@ class Template:
 
 	def validate(self, parsed):
 		""" Validates a parsed JSON template descriptor """
-		for p in ['name','recipe','variables','constants']:
+		for p in ['name','actions','arguments','constants']:
 			if not p in parsed:
 				return False
 		
@@ -132,7 +132,7 @@ class Template:
 
 	def preprocess(self):
 		""" Prepares the multi-regexp used for templating """
-		self.__regexp_dict = dict(self.variables, **self.constants)
+		self.__regexp_dict = dict(self.arguments, **self.constants)
 		self.__regexp = re.compile("(%s)" % "|".join(map(re.escape, self.__regexp_dict.keys())))
 
 		return True
@@ -175,31 +175,32 @@ class Generator:
 
 		self.templates[name] = template
 
+	def find_template(self, name):
+		""" Returns a registered template by its name """
+		if not name in self.templates:
+			raise TemplateNotFound('Template %s not found' % name)
+
+		return self.templates[name]
+
 	def action_handler(self, action_type, action_name, action_data=None):
 		""" Default action handler which creates files and executes shell commands """
 		if action_type == 1:
 			# execute shell command
+			logging.debug('Executing \'%s\'' % action_name)
 			os.system(action_name)
 		elif action_type == 2:
-			# do not overwrite files
+			# do not overwrite any generated files
 			if os.path.exists(action_name): 
 				logging.debug('File %s exists, skipping ...' % action_name)
 			else:
-				# write template file in the currently active directory
-				# see def execute(...) for more information regarding this
+				# write out file (the content is processed)
 				with open(action_name,'w') as f: 
 					f.write(action_data)
 					logging.debug('File %s written ...' % action_name)
 
-	def execute(self, name, path):
+	def execute(self, name):
 		""" Executes the generator """
-		if not name in self.templates:
-			raise TemplateNotFound('Template %s not found' % name)
-
-		# change current working directory
-		os.chdir(path)
-
-		return self.templates[name].execute(self.action_handler)
+		return self.find_template(name).execute(self.action_handler)
 
 class Templatizer:
 	def __init__(self, argv={}, config='~/.templatizer'):
@@ -245,7 +246,11 @@ class Templatizer:
 	def execute(self, name, path):
 		""" Executes the internal generator """
 		logging.debug("Working directory `%s`" % path)
-		return self.generator.execute(name, path)
+		
+		# change current working directory
+		os.chdir(path)
+
+		return self.generator.execute(name)
 			
 def main(argv):
 	""" Main """
