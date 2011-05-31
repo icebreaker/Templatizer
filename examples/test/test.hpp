@@ -1,6 +1,8 @@
 /*
 	Copyright (c) 1987-%YEAR%, John Doe
 	All rights reserved.
+
+	Oh, %MONTH% is awesome.
 */
 #ifndef %NAME-UPCASE%TEST_HPP
 #define %NAME-UPCASE%TEST_HPP

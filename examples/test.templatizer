@@ -1,13 +1,10 @@
 { 
-	"version":"10",
-	"author":"John Doe",
-	"description":"Basic skeleton for unit tests.",
 	"name": "test",
-	"package":
+	"actions":
 	[	
 		["%NAME-LOWCASE%.hpp","test/test.hpp"]
 	],
-	"variables":
+	"arguments":
 	{
 		"name": 
 		{
@@ -24,6 +21,6 @@
 	},
 	"constants":
 	{
-		"%YEAR%":"datetime.now().year"
+		"%MONTH%":"datetime.now().month"
 	}
 }
