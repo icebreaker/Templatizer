@@ -82,6 +82,10 @@ relative to the current directory.
 
 	templatizer test --name=Hello --namespace=foundation::framework
 
+### Available Templates
+There's a repository where I'll share my general-purpose templates so be sure to check it out
+for some real life examples by click right [here](https://github.com/icebreaker/Templatizer-Templates) .
+
 TODO
 ----
 * unit tests
