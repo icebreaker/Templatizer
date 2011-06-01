@@ -80,7 +80,7 @@ There are a couple of *internal built-in constants* as follows:
 Once you have at least one valid template, it's very easy to use and the results are generated
 relative to the current directory.
 
-`templatizer test --name=Hello --namespace=foundation::framework`
+	templatizer test --name=Hello --namespace=foundation::framework
 
 TODO
 ----
@@ -97,4 +97,4 @@ License
 -------
 Copyright (c) 2011, Mihail Szabolcs
 
-Templatizer is provided **as-is** under the GPLv3 license. For more information see LICENSE.
+Templatizer is provided **as-is** under the **GPLv3** license. For more information see LICENSE.
