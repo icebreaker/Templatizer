@@ -52,6 +52,7 @@ class Template:
 		self.path = path
 		self.constants = {}
 		self.arguments = {}
+		self.missing_arguments = []
 		self.actions = []
 
 		self.__regexp = None
@@ -68,7 +69,7 @@ class Template:
 		template = json.loads(open(filename).read())
 		
 		if not self.validate(template):
-			raise InvalidTemplate("Invalid %s template" % filename)
+			raise InvalidTemplate('Invalid %s template' % filename)
 	
 		self.__name = template['name']
 
@@ -94,7 +95,7 @@ class Template:
 				for kk, vv in v.items():
 					self.arguments[kk] = str(eval('lambda v: %s' % vv)(vvv))
 			else:
-				raise ArgumentRequired('--%s argument required' % k)
+				self.missing_arguments.append(k)
 
 		return True
 
@@ -105,7 +106,7 @@ class Template:
 
 		# list of (internal) built-in constants
 		self.constants['%YEAR%'] = str(datetime.now().year)
-		self.constants['%DATE%'] = datetime.now().strftime("%d/%m/%y")
+		self.constants['%DATE%'] = datetime.now().strftime('%d/%m/%y')
 		self.constants['%TPLDIR%'] = self.path # absolute path to the template directory
 
 		return True
@@ -133,7 +134,7 @@ class Template:
 	def preprocess(self):
 		""" Prepares the multi-regexp used for templating """
 		self.__regexp_dict = dict(self.arguments, **self.constants)
-		self.__regexp = re.compile("(%s)" % "|".join(map(re.escape, self.__regexp_dict.keys())))
+		self.__regexp = re.compile('(%s)' % '|'.join(map(re.escape, self.__regexp_dict.keys())))
 
 		return True
 
@@ -143,8 +144,11 @@ class Template:
 		
 	def execute(self, action_handler):
 		""" Execute """
+		if len(self.missing_arguments) > 0:
+			raise ArgumentRequired('--%s argument required' % self.missing_arguments[0])
+
 		if not callable(action_handler):
-			raise InvalidActionHandler("Invalid action handler")
+			raise InvalidActionHandler('Invalid action handler')
 
 		for action in self.actions:
 			action_type = len(action)
@@ -245,7 +249,7 @@ class Templatizer:
 						
 	def execute(self, name, path):
 		""" Executes the internal generator """
-		logging.debug("Working directory `%s`" % path)
+		logging.debug('Working directory `%s`' % path)
 		
 		# change current working directory
 		os.chdir(path)
