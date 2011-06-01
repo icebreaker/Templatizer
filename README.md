@@ -97,4 +97,4 @@ License
 -------
 Copyright (c) 2011, Mihail Szabolcs
 
-Templatizer is provided **as-is** under the **GPLv3** license. For more information see LICENSE.
+Templatizer is provided **as-is** under the **GPL** license. For more information see LICENSE.
