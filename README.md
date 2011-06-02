@@ -88,7 +88,14 @@ for some real life examples by click right [here](https://github.com/icebreaker/
 
 TODO
 ----
+(ordered by priority)
+
 * unit tests
+* list all available templates
+	* allow filter / search (useful for a large number of templates)
+* list all necessary arguments for a template
+* add support for optional arguments with configurable and sensible defaults
+* optional user-friendly GUI using GTK3
 
 Contribute
 ----------
