@@ -25,9 +25,9 @@
 """
 
 __author__		= 'Mihail Szabolcs'
-__description__ = 'General purpose data-driven generator.'
+__description__ 	= 'General purpose data-driven generator.'
 __version__		= (0, 2, 0)
-__license__		= 'GPL'
+__license__		= 'MIT'
 
 import sys
 import os
